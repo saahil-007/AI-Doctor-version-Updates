@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Updated background and foreground colors for better visibility */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    
+    /* Updated card colors */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    
+    /* Updated popover colors */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    
+    /* Updated primary colors */
+    --primary: 222 47% 11%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Updated secondary colors */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    
+    /* Updated muted colors */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 20% 40%;
+    
+    /* Updated accent colors */
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+    
+    /* Updated destructive colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Updated border and input colors */
+    --border: 210 40% 92%;
+    --input: 210 40% 92%;
+    --ring: 222 47% 11%;
+    
+    --radius: 0.5rem;
+    
+    /* Updated sidebar colors */
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 222 47% 11%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 92%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 210 40% 92%;
+    --sidebar-ring: 222 47% 11%;
+  }
+  
+  .dark {
+    /* Dark mode colors */
+    --background: 222 47% 11%;
+    --foreground: 0 0% 100%;
+    
+    --card: 222 47% 11%;
+    --card-foreground: 0 0% 100%;
+    
+    --popover: 222 47% 11%;
+    --popover-foreground: 0 0% 100%;
+    
+    --primary: 0 0% 100%;
+    --primary-foreground: 222 47% 11%;
+    
+    --secondary: 222 40% 20%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 222 40% 20%;
+    --muted-foreground: 215 20% 80%;
+    
+    --accent: 222 40% 20%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 222 40% 20%;
+    --input: 222 40% 20%;
+    --ring: 0 0% 100%;
+    
+    --sidebar-background: 222 40% 15%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 222 40% 20%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 40% 20%;
+    --sidebar-ring: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  /* Apply Poppins font globally */
+  html, body, button, input, textarea, select {
+    font-family: 'Poppins', sans-serif;
+  }
+}

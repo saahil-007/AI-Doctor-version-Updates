@@ -67,8 +67,9 @@ const Chat = () => {
     setIsLoading(true);
 
     try {
-      // Send message to Flask backend
-      const response = await fetch('http://localhost:5000/chat', {
+      // For Vercel deployment, use relative path
+      // For local development, you might need to change this to 'http://localhost:5000/chat'
+      const response = await fetch('/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

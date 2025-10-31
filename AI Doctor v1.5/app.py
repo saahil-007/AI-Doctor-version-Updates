@@ -316,7 +316,11 @@ def serve_assets(filename):
     try:
         return send_from_directory('frontend/dist/assets', filename)
     except:
-        return jsonify({"error": "Asset not found"}), 404
+        # For client-side routing, serve index.html for non-API routes
+        try:
+            return send_from_directory('frontend/dist', 'index.html')
+        except:
+            return "Frontend build not found. Please run 'npm run build' in the frontend directory."
 
 # Add more specific routes for common file types
 @app.route('/<filename>.js')
@@ -325,27 +329,30 @@ def serve_js(filename):
         return send_from_directory('frontend/dist', f'{filename}.js')
     except:
         # For client-side routing, serve index.html for non-API routes
-        if not filename.startswith(('chat', 'translate', 'preprocess', 'health')):
-            try:
-                return send_from_directory('frontend/dist', 'index.html')
-            except:
-                return "Frontend build not found. Please run 'npm run build' in the frontend directory."
-        else:
-            return jsonify({"error": "Not found"}), 404
+        try:
+            return send_from_directory('frontend/dist', 'index.html')
+        except:
+            return "Frontend build not found. Please run 'npm run build' in the frontend directory."
 
 @app.route('/<filename>.css')
 def serve_css(filename):
     try:
         return send_from_directory('frontend/dist', f'{filename}.css')
     except:
-        return send_from_directory('frontend/dist', 'index.html')
+        try:
+            return send_from_directory('frontend/dist', 'index.html')
+        except:
+            return "Frontend build not found. Please run 'npm run build' in the frontend directory."
 
 @app.route('/<filename>.ico')
 def serve_ico(filename):
     try:
         return send_from_directory('frontend/dist', f'{filename}.ico')
     except:
-        return send_from_directory('frontend/dist', 'index.html')
+        try:
+            return send_from_directory('frontend/dist', 'index.html')
+        except:
+            return "Frontend build not found. Please run 'npm run build' in the frontend directory."
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -562,12 +569,14 @@ def health_check():
 @app.route('/<path:path>')
 def serve_static(path):
     # For client-side routing, serve index.html for all non-API routes
-    if not path.startswith(('api/', 'chat', 'translate', 'preprocess', 'health')):
+    if not path.startswith(('api/', 'chat', 'translate', 'preprocess', 'health', 'assets/')):
         try:
             return send_from_directory('frontend/dist', 'index.html')
         except:
             return "Frontend build not found. Please run 'npm run build' in the frontend directory."
     else:
+        # For API routes and assets, let Flask handle them with specific routes
+        # This should not be reached as specific routes are defined above
         return jsonify({"error": "Not found"}), 404
 
 # Vercel requires the app to be exported as `app`

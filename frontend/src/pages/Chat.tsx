@@ -1,22 +1,31 @@
 import { useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { LayoutDashboard, MessageSquare, Settings, LogOut, Bot } from "lucide-react";
-import { motion } from "framer-motion";
+import { LayoutDashboard, MessageSquare, Settings, LogOut, Bot, Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { AIInput } from "@/components/ui/ai-input";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  translatedContent?: {
+    en?: string;
+    hi?: string;
+    mr?: string;
+  };
+  currentLanguage?: 'en' | 'hi' | 'mr';
 }
 
-const Chat = () => {
+export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       role: "assistant",
-      content: "Hello, I am Dr.Vaani, your Personal AI Doctor, How can i help you today!"
+      content: "Hello, I am Dr.Vaani, your Personal AI Doctor, How can i help you today!",
+      currentLanguage: 'en'
     }
 ]);
   const [open, setOpen] = useState(false);
@@ -94,6 +103,7 @@ const Chat = () => {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: aiResponseText,
+        currentLanguage: 'en'
       };
       
       setMessages(prev => [...prev, aiResponse]);
@@ -103,11 +113,83 @@ const Chat = () => {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: "Sorry, I'm having trouble responding right now. Please try again later.",
+        currentLanguage: 'en'
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Function to translate a message
+  const translateMessage = async (messageId: string, targetLanguage: 'en' | 'hi' | 'mr') => {
+    const messageIndex = messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1) return;
+
+    const message = messages[messageIndex];
+    if (!message || message.role !== "assistant") return;
+
+    // Check if already translated
+    if (message.translatedContent?.[targetLanguage]) {
+      // Update current language
+      const updatedMessages = [...messages];
+      updatedMessages[messageIndex] = {
+        ...message,
+        currentLanguage: targetLanguage
+      };
+      setMessages(updatedMessages);
+      return;
+    }
+
+    try {
+      const response = await fetch('/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: message.content,
+          target_language: targetLanguage,
+          source_language: 'en' // Assuming AI responses are in English by default
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const translatedText = data.translated_text;
+
+      // Update message with translated content
+      const updatedMessages = [...messages];
+      updatedMessages[messageIndex] = {
+        ...message,
+        translatedContent: {
+          ...message.translatedContent,
+          [targetLanguage]: translatedText
+        },
+        currentLanguage: targetLanguage
+      };
+      setMessages(updatedMessages);
+    } catch (error) {
+      console.error("Error translating message:", error);
+    }
+  };
+
+  // Function to get display content for a message
+  const getDisplayContent = (message: Message) => {
+    if (message.role !== "assistant") return message.content;
+    
+    const currentLang = message.currentLanguage || 'en';
+    if (currentLang === 'en') return message.content;
+    
+    return message.translatedContent?.[currentLang] || message.content;
+  };
+
+  // Function to clean response content by removing asterisks
+  const cleanResponseContent = (content: string) => {
+    return content.replace(/\*/g, '');
   };
 
   return (
@@ -164,7 +246,49 @@ const Chat = () => {
                       : "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none"
                   )}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  {message.role === "assistant" ? (
+                    <div className="text-sm whitespace-pre-wrap">
+                      {cleanResponseContent(getDisplayContent(message))}
+                      {/* Translation buttons for AI responses */}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          onClick={() => translateMessage(message.id, 'en')}
+                          className={cn(
+                            "text-xs px-2 py-1 rounded-full border",
+                            message.currentLanguage === 'en' 
+                              ? "bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300" 
+                              : "bg-gray-100 border-gray-300 text-gray-700 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500"
+                          )}
+                        >
+                          English
+                        </button>
+                        <button
+                          onClick={() => translateMessage(message.id, 'hi')}
+                          className={cn(
+                            "text-xs px-2 py-1 rounded-full border",
+                            message.currentLanguage === 'hi' 
+                              ? "bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300" 
+                              : "bg-gray-100 border-gray-300 text-gray-700 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500"
+                          )}
+                        >
+                          हिंदी
+                        </button>
+                        <button
+                          onClick={() => translateMessage(message.id, 'mr')}
+                          className={cn(
+                            "text-xs px-2 py-1 rounded-full border",
+                            message.currentLanguage === 'mr' 
+                              ? "bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300" 
+                              : "bg-gray-100 border-gray-300 text-gray-700 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500"
+                          )}
+                        >
+                          मराठी
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm">{message.content}</p>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -191,7 +315,7 @@ const Chat = () => {
       </div>
     </div>
   );
-};
+}
 
 const Logo = ({ open }: { open: boolean }) => {
   return (
@@ -207,5 +331,3 @@ const Logo = ({ open }: { open: boolean }) => {
     </div>
   );
 };
-
-export default Chat;

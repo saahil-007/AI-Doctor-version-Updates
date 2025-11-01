@@ -1,10 +1,11 @@
 "use client";
 
-import { CornerRightUp, Mic } from "lucide-react";
-import { useState } from "react";
+import { CornerRightUp, Mic, MicOff } from "lucide-react";
+import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
+import { SpeechRecognition } from "@/lib/types";
 
 interface AIInputProps {
   id?: string
@@ -28,12 +29,72 @@ export function AIInput({
     maxHeight,
   });
   const [inputValue, setInputValue] = useState("");
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const handleReset = () => {
     if (!inputValue.trim()) return;
     onSubmit?.(inputValue);
     setInputValue("");
     adjustHeight(true);
+  };
+
+  const startListening = () => {
+    if (isListening) return;
+
+    // Check if SpeechRecognition is available
+    const SpeechRecognitionConstructor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognitionConstructor) {
+      alert("Speech recognition is not supported in your browser. Please try Chrome or Edge.");
+      return;
+    }
+
+    // Initialize speech recognition
+    recognitionRef.current = new SpeechRecognitionConstructor() as SpeechRecognition;
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = true;
+    recognitionRef.current.lang = 'en-US';
+
+    recognitionRef.current.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognitionRef.current.onresult = (event: any) => {
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0])
+        .map((result) => result.transcript)
+        .join('');
+      
+      setInputValue(transcript);
+      adjustHeight();
+    };
+
+    recognitionRef.current.onerror = (event: any) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+    };
+
+    recognitionRef.current.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current.start();
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
   };
 
   return (
@@ -71,11 +132,17 @@ export function AIInput({
 
         <div
           className={cn(
-            "absolute top-1/2 -translate-y-1/2 rounded-xl bg-gray-100 dark:bg-gray-700 py-2 px-2 transition-all duration-200",
+            "absolute top-1/2 -translate-y-1/2 rounded-xl py-2 px-2 transition-all duration-200 cursor-pointer",
+            "hover:bg-gray-200 dark:hover:bg-gray-600",
             inputValue ? "right-14" : "right-3"
           )}
+          onClick={toggleListening}
         >
-          <Mic className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          {isListening ? (
+            <MicOff className="w-5 h-5 text-red-500" />
+          ) : (
+            <Mic className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          )}
         </div>
         <button
           onClick={handleReset}

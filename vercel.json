@@ -4,9 +4,7 @@
   "outputDirectory": "frontend/dist",
   "installCommand": "pip install -r requirements.txt && npm ci --prefix frontend",
   "functions": {
-    "api/*.py": {
-      "runtime": "python3.12"
-    }
+    "api/*.py": {}
   },
   "routes": [
     {

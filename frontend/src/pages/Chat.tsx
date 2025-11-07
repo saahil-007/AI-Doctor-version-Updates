@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { LayoutDashboard, MessageSquare, Settings, LogOut, Bot, Languages, Volume2, VolumeX } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Settings, LogOut, Bot, Languages, Volume2, VolumeX, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { AIInput } from "@/components/ui/ai-input";
@@ -143,6 +143,13 @@ export default function Chat() {
       ),
     },
     {
+      label: "Arena",
+      href: "/arena",
+      icon: (
+        <Sword className="text-gray-600 dark:text-gray-300 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
       label: "Settings",
       href: "/settings",
       icon: (
@@ -187,7 +194,8 @@ export default function Chat() {
           message: value,
           language: 'en',
           translate_to: 'en',
-          source_language: 'en'
+          source_language: 'en',
+          user_id: 'chat_user'  // Add user_id for context tracking
         }),
       });
 

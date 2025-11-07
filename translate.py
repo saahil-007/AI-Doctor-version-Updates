@@ -28,7 +28,7 @@ def translate_text(text, target_language):
         # Extract translated text
         if data.get('responseStatus') == 200 and data.get('responseData'):
             translated_text = data['responseData'].get('translatedText', text)
-            logger.info(f"Translated '{text[:100]}...' to {target_language}: '{translated_text[:100]}...'")
+            logger.info(f"Translated '{text[:5000]}...' to {target_language}: '{translated_text[:100]}...'")
             return translated_text
         else:
             logger.error(f"Translation API error: {data}")
